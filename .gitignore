@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.venv/
+env/
+*.srt
+*.vtt
+*.mkv
+*.mp4
+*.mov
+*.avi
+*.webm
+.idea/
+.vscode/

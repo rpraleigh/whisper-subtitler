@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whisper-subtitler"
+version = "0.1.0"
+description = "Lightweight drag-and-drop desktop UI for sentence-based video subtitling using Stable-Whisper."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = [
+    "stable-ts",
+    "tkinterdnd2"
+]
+
+[project.scripts]
+subtitler = "whisper_subtitler.app:main"
