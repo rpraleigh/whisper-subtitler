@@ -12,6 +12,8 @@ license = { text = "MIT" }
 dependencies = [
     "stable-ts",
     "tkinterdnd2"
+	"packaging",
+    "onnxruntime"
 ]
 
 [project.scripts]
