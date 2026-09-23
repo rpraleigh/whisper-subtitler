@@ -244,6 +244,7 @@ class SubtitleApp:
       if use_vad:
         transcribe_kwargs["vad"] = True
         transcribe_kwargs["vad_threshold"] = 0.35
+        transcribe_kwargs["vad_onnx"] = True
 
       result = model.transcribe(input_file, **transcribe_kwargs)
 
