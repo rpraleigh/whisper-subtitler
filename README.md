@@ -22,7 +22,7 @@ A lightweight drag-and-drop desktop GUI for transcribing video files (`.mkv`, `.
 ### Local Editable Install (Development)
 
 ```bash
-git clone https://github.com/<your-username>/whisper-subtitler.git
+git clone https://github.com/rpraleigh/whisper-subtitler.git
 cd whisper-subtitler
 pip install -e .
 ```
@@ -30,7 +30,7 @@ pip install -e .
 ### Install Directly via Pip / GitHub
 
 ```bash
-pip install git+https://github.com/<your-username>/whisper-subtitler.git
+pip install git+https://github.com/rpraleigh/whisper-subtitler.git
 ```
 
 ## Usage
