@@ -28,14 +28,14 @@ class SubtitleApp:
   def __init__(self, root):
     self.root = root
     self.root.title("Video Subtitler (Stable-Whisper)")
-    self.root.geometry("560x640")
+    self.root.geometry("560x670")
     self.root.resizable(False, False)
 
     self.file_path_var = tk.StringVar()
     self._build_ui()
 
   def _build_ui(self):
-    pad = {"padx": 15, "pady": 6}
+    pad = {"padx": 15, "pady": 5}
 
     # Source File Selection
     self.drop_frame = tk.LabelFrame(
@@ -71,9 +71,9 @@ class SubtitleApp:
     )
     settings_frame.pack(fill="x", **pad)
 
-    # Row 1: Model
+    # Model
     model_row = tk.Frame(settings_frame)
-    model_row.pack(fill="x", padx=10, pady=4)
+    model_row.pack(fill="x", padx=10, pady=3)
     tk.Label(model_row, text="Model:", width=22, anchor="w").pack(side="left")
     self.model_var = tk.StringVar(value="large-v3")
     model_dropdown = ttk.Combobox(
@@ -85,9 +85,9 @@ class SubtitleApp:
     )
     model_dropdown.pack(side="left")
 
-    # Row 2: Task
+    # Task
     task_row = tk.Frame(settings_frame)
-    task_row.pack(fill="x", padx=10, pady=4)
+    task_row.pack(fill="x", padx=10, pady=3)
     tk.Label(task_row, text="Task:", width=22, anchor="w").pack(side="left")
     self.task_var = tk.StringVar(value="translate (To English)")
     task_dropdown = ttk.Combobox(
@@ -99,9 +99,9 @@ class SubtitleApp:
     )
     task_dropdown.pack(side="left")
 
-    # Row 3: Source Language
+    # Source Language
     lang_row = tk.Frame(settings_frame)
-    lang_row.pack(fill="x", padx=10, pady=4)
+    lang_row.pack(fill="x", padx=10, pady=3)
     tk.Label(lang_row, text="Source Language:", width=22, anchor="w").pack(
         side="left"
     )
@@ -116,9 +116,9 @@ class SubtitleApp:
     )
     lang_dropdown.pack(side="left")
 
-    # Row 4: Max Words
+    # Max Words Limit
     words_row = tk.Frame(settings_frame)
-    words_row.pack(fill="x", padx=10, pady=4)
+    words_row.pack(fill="x", padx=10, pady=3)
     tk.Label(words_row, text="Max words per cue:", width=22, anchor="w").pack(
         side="left"
     )
@@ -128,21 +128,38 @@ class SubtitleApp:
     )
     words_spin.pack(side="left")
 
-    # Row 5: VAD Filter Sensitivity
+    # Minimum Cue Duration (Pacing)
+    dur_row = tk.Frame(settings_frame)
+    dur_row.pack(fill="x", padx=10, pady=3)
+    tk.Label(
+        dur_row, text="Min cue duration (sec):", width=22, anchor="w"
+    ).pack(side="left")
+    self.min_dur_var = tk.DoubleVar(value=1.4)
+    dur_spin = ttk.Spinbox(
+        dur_row,
+        from_=0.5,
+        to=3.5,
+        increment=0.1,
+        textvariable=self.min_dur_var,
+        width=6,
+    )
+    dur_spin.pack(side="left")
+
+    # VAD Filter
     vad_row = tk.Frame(settings_frame)
-    vad_row.pack(fill="x", padx=10, pady=4)
+    vad_row.pack(fill="x", padx=10, pady=3)
     self.vad_var = tk.BooleanVar(value=True)
     cb_vad = ttk.Checkbutton(
         vad_row,
-        text="Enable VAD (Silence / noise suppression)",
+        text="Enable VAD (Silence / noise suppression via ONNX)",
         variable=self.vad_var,
     )
     cb_vad.pack(side="left")
 
-    # Advanced Anti-Hallucination Options
+    # Formatting & Anti-Hallucination Options
     adv_frame = tk.LabelFrame(
         self.root,
-        text="Anti-Hallucination & Formatting",
+        text="Formatting & Stability",
         font=("Segoe UI", 9, "bold"),
     )
     adv_frame.pack(fill="x", **pad)
@@ -153,15 +170,15 @@ class SubtitleApp:
         text="Regroup into complete sentences (split by punctuation)",
         variable=self.regroup_var,
     )
-    cb_regroup.pack(anchor="w", padx=10, pady=3)
+    cb_regroup.pack(anchor="w", padx=10, pady=2)
 
     self.condition_prev_var = tk.BooleanVar(value=False)
     cb_condition = ttk.Checkbutton(
         adv_frame,
-        text="Condition on previous text (Turn OFF to stop repetition loops)",
+        text="Condition on previous text (Keep OFF to prevent repetition loops)",
         variable=self.condition_prev_var,
     )
-    cb_condition.pack(anchor="w", padx=10, pady=3)
+    cb_condition.pack(anchor="w", padx=10, pady=2)
 
     self.highlight_var = tk.BooleanVar(value=False)
     cb_highlight = ttk.Checkbutton(
@@ -169,7 +186,7 @@ class SubtitleApp:
         text="Word highlighting / Karaoke mode",
         variable=self.highlight_var,
     )
-    cb_highlight.pack(anchor="w", padx=10, pady=3)
+    cb_highlight.pack(anchor="w", padx=10, pady=2)
 
     # Status & Execution
     self.status_var = tk.StringVar(value="Ready")
@@ -217,6 +234,7 @@ class SubtitleApp:
     try:
       model_name = self.model_var.get()
       max_words = self.max_words_var.get()
+      min_dur = self.min_dur_var.get()
       do_regroup = self.regroup_var.get()
       do_highlight = self.highlight_var.get()
       use_vad = self.vad_var.get()
@@ -229,7 +247,7 @@ class SubtitleApp:
       lang_code = dict(LANGUAGE_OPTIONS).get(selected_label, "auto")
       language = None if lang_code == "auto" else lang_code
 
-      # Load model (CUDA enabled automatically if torch detects GPU)
+      # Load model (CUDA enabled automatically if PyTorch detects GPU)
       model = stable_whisper.load_model(model_name)
 
       # Transcription options tailored to eliminate noise-induced hallucinations
@@ -254,7 +272,11 @@ class SubtitleApp:
       if max_words > 0:
         result.split_by_length(max_words=max_words)
 
-      # File output
+      # Enforce minimum readable on-screen time for short cues
+      if min_dur > 0:
+        result.adjust_by_minimum_duration(min_dur)
+
+      # File output naming
       base_path = os.path.splitext(input_file)[0]
       suffix = ".en.srt" if is_translation else ".srt"
       out_path = f"{base_path}{suffix}"
